@@ -117,8 +117,20 @@
     .scripture-box {
       background: var(--card-bg);
       border-left: 4px solid var(--rubric-color);
-      padding: 1rem;
+      padding: 1.25rem;
       margin: 1rem 0;
+      font-size: 1.05rem;
+      line-height: 1.8;
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+    .verse-num {
+      font-size: 0.75em;
+      vertical-align: super;
+      font-weight: bold;
+      color: var(--rubric-color);
+      margin-right: 2px;
+      margin-left: 4px;
     }
     .search-bar {
       width: 100%;
@@ -150,7 +162,6 @@
       border-radius: 50%;
       margin-right: 4px;
     }
-    /* Tracker Specific Styles */
     .progress-bar-container {
       background-color: var(--border-color);
       border-radius: 8px;
@@ -176,23 +187,27 @@
     }
     .plan-card.completed {
       opacity: 0.65;
+    }
+    .plan-card.completed .plan-title {
       text-decoration: line-through;
     }
     .plan-info {
       cursor: pointer;
       display: flex;
       flex-direction: column;
+      flex-grow: 1;
     }
     .plan-title {
       font-weight: bold;
+      color: var(--rubric-color);
     }
     .plan-sub {
       font-size: 0.85em;
       color: var(--accent-color);
     }
     .tracker-checkbox {
-      width: 20px;
-      height: 20px;
+      width: 22px;
+      height: 22px;
       cursor: pointer;
       accent-color: var(--rubric-color);
     }
@@ -216,7 +231,7 @@
       <button id="nav-evening" onclick="switchTab('evening')">Evening</button>
       <button id="nav-compline" onclick="switchTab('compline')">Compline</button>
       <button id="nav-tracker" onclick="switchTab('tracker')">Reading Tracker</button>
-      <button id="nav-readings" onclick="switchTab('readings')">Scripture</button>
+      <button id="nav-readings" onclick="switchTab('readings')">Scripture Reader</button>
       <button id="nav-prayers" onclick="switchTab('prayers')">Prayers</button>
       <button id="nav-calendar" onclick="switchTab('calendar')">Calendar</button>
     </nav>
@@ -310,7 +325,7 @@
     <div id="section-tracker" class="liturgy-section">
       <div class="card">
         <h2>Daily Scripture Reading Tracker</h2>
-        <p class="rubric">Follow the BCP 2019 Daily Office Lectionary. Check off chapters as you read to track progress.</p>
+        <p class="rubric">Follow the BCP 2019 Daily Office Lectionary. Tap any reading to load it directly into the Reader.</p>
         
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:1rem;">
           <div>
@@ -340,15 +355,16 @@
       </div>
     </div>
 
-    <!-- Scripture View Tab -->
+    <!-- Scripture Reader Tab -->
     <div id="section-readings" class="liturgy-section">
       <div class="card">
         <h2>Scripture Reader (NKJV)</h2>
         <div style="display:flex; gap:0.5rem; margin-bottom:1rem;">
-          <input type="text" id="bibleLookupInput" class="search-bar" style="margin:0;" value="John 1">
+          <input type="text" id="bibleLookupInput" class="search-bar" style="margin:0;" value="John 1" placeholder="e.g. John 1, Gen 24:1-28, 1 Cor 13">
           <button onclick="fetchPassage()">Read</button>
         </div>
-        <div id="bibleTextDisplay" class="scripture-box">Loading passage...</div>
+        <div id="passageHeader" style="font-weight:bold; font-size:1.1rem; color:var(--rubric-color); margin-bottom:0.5rem;"></div>
+        <div id="bibleTextDisplay" class="scripture-box">Select or enter a passage to begin reading...</div>
       </div>
     </div>
 
@@ -373,7 +389,76 @@
   <script>
     let currentFontSize = 18;
 
-    // Lectionary mapping for demo/annual cycles (Month-Day format)
+    // Full Canonical 66-Book Index Map for Bolls Life API
+    const BOOK_MAP = {
+      "genesis": 1, "gen": 1,
+      "exodus": 2, "exod": 2, "ex": 2,
+      "leviticus": 3, "lev": 3,
+      "numbers": 4, "num": 4,
+      "deuteronomy": 5, "deut": 5, "dt": 5,
+      "joshua": 6, "josh": 6,
+      "judges": 7, "judg": 7, "jdg": 7,
+      "ruth": 8, "rth": 8,
+      "1 samuel": 9, "1 sam": 9, "1sam": 9,
+      "2 samuel": 10, "2 sam": 10, "2sam": 10,
+      "1 kings": 11, "1 kgs": 11, "1kgs": 11,
+      "2 kings": 12, "2 kgs": 12, "2kgs": 12,
+      "1 chronicles": 13, "1 chron": 13, "1 chr": 13, "1chron": 13,
+      "2 chronicles": 14, "2 chron": 14, "2 chr": 14, "2chron": 14,
+      "ezra": 15, "ezr": 15,
+      "nehemiah": 16, "neh": 16,
+      "esther": 17, "esth": 17,
+      "job": 18,
+      "psalms": 19, "psalm": 19, "ps": 19, "pss": 19,
+      "proverbs": 20, "prov": 20, "prv": 20,
+      "ecclesiastes": 21, "eccl": 21, "ecc": 21,
+      "song of solomon": 22, "song of songs": 22, "song": 22, "canticles": 22,
+      "isaiah": 23, "isa": 23,
+      "jeremiah": 24, "jer": 24,
+      "lamentations": 25, "lam": 25,
+      "ezekiel": 26, "ezek": 26,
+      "daniel": 27, "dan": 27,
+      "hosea": 28, "hos": 28,
+      "joel": 29, "jl": 29,
+      "amos": 30, "am": 30,
+      "obadiah": 31, "obad": 31,
+      "jonah": 32, "jon": 32,
+      "micah": 33, "mic": 33,
+      "nahum": 34, "nah": 34,
+      "habakkuk": 35, "hab": 35,
+      "zephaniah": 36, "zeph": 36,
+      "haggai": 37, "hag": 37,
+      "zechariah": 38, "zech": 38,
+      "malachi": 39, "mal": 39,
+      "matthew": 40, "matt": 40, "mt": 40,
+      "mark": 41, "mk": 41,
+      "luke": 42, "lk": 42,
+      "john": 43, "jn": 43,
+      "acts": 44, "act": 44,
+      "romans": 45, "rom": 45,
+      "1 corinthians": 46, "1 cor": 46, "1cor": 46,
+      "2 corinthians": 47, "2 cor": 47, "2cor": 47,
+      "galatians": 48, "gal": 48,
+      "ephesians": 49, "eph": 49,
+      "philippians": 50, "phil": 50, "php": 50,
+      "colossians": 51, "col": 51,
+      "1 thessalonians": 52, "1 thess": 52, "1thess": 52,
+      "2 thessalonians": 53, "2 thess": 53, "2thess": 53,
+      "1 timothy": 54, "1 tim": 54, "1tim": 54,
+      "2 timothy": 55, "2 tim": 55, "2tim": 55,
+      "titus": 56, "tit": 56,
+      "philemon": 57, "philem": 57, "phm": 57,
+      "hebrews": 58, "heb": 58,
+      "james": 59, "jas": 59,
+      "1 peter": 60, "1 pet": 60, "1pet": 60,
+      "2 peter": 61, "2 pet": 61, "2pet": 61,
+      "1 john": 62, "1 jn": 62, "1jn": 62,
+      "2 john": 63, "2 jn": 63, "2jn": 63,
+      "3 john": 64, "3 jn": 64, "3jn": 64,
+      "jude": 65, "jud": 65,
+      "revelation": 66, "rev": 66
+    };
+
     const DAILY_LECTIONARY = {
       "01-01": { mp1: "Gen 1", mp2: "John 1:1-28", ep1: "Gal 1", ep2: "Luke 2:8-21" },
       "01-02": { mp1: "Gen 2", mp2: "John 1:29-51", ep1: "Jer 1", ep2: "Gal 2" },
@@ -381,19 +466,6 @@
       "01-04": { mp1: "Gen 4", mp2: "John 3:1-21", ep1: "Jer 3", ep2: "Gal 4" },
       "01-05": { mp1: "Gen 5", mp2: "John 3:22-36", ep1: "Jer 4", ep2: "Gal 5" },
       "default": { mp1: "Exod 24", mp2: "Matt 22:34-46", ep1: "Prov 16", ep2: "Philemon 1" }
-    };
-
-    const BOOK_IDS = {
-      "Gen": 1, "Exod": 2, "Lev": 3, "Num": 4, "Deut": 5, "Josh": 6, "Judg": 7, "Ruth": 8,
-      "1 Sam": 9, "2 Sam": 10, "1 Kings": 11, "2 Kings": 12, "1 Chron": 13, "2 Chron": 14,
-      "Ezra": 15, "Neh": 16, "Esth": 17, "Job": 18, "Ps": 19, "Prov": 20, "Eccl": 21,
-      "Song": 22, "Isa": 23, "Jer": 24, "Lam": 25, "Ezek": 26, "Dan": 27, "Hos": 28,
-      "Joel": 29, "Amos": 30, "Obad": 31, "Jonah": 32, "Mic": 33, "Nahum": 34, "Hab": 35,
-      "Zeph": 36, "Hag": 37, "Zech": 38, "Mal": 39, "Matt": 40, "Mark": 41, "Luke": 42,
-      "John": 43, "Acts": 44, "Rom": 45, "1 Cor": 46, "2 Cor": 47, "Gal": 48, "Eph": 49,
-      "Phil": 50, "Col": 51, "1 Thess": 52, "2 Thess": 53, "1 Tim": 54, "2 Tim": 55,
-      "Titus": 56, "Philemon": 57, "Heb": 58, "Jas": 59, "1 Pet": 60, "2 Pet": 61,
-      "1 John": 62, "2 John": 63, "3 John": 64, "Jude": 65, "Rev": 66
     };
 
     const PRAYERS = [
@@ -405,21 +477,19 @@
     ];
 
     function init() {
-      // Time routing
       const hour = new Date().getHours();
       if (hour >= 4 && hour < 11) switchTab('morning');
       else if (hour >= 11 && hour < 14) switchTab('midday');
       else if (hour >= 14 && hour < 20) switchTab('evening');
       else switchTab('compline');
 
-      // Set date picker to today
       const today = new Date().toISOString().split('T')[0];
       document.getElementById('trackerDate').value = today;
 
       renderTracker();
       renderPrayers(PRAYERS);
       renderCalendar();
-      fetchPassage("John 1");
+      fetchPassage("John 1:1-14");
     }
 
     function switchTab(name) {
@@ -453,7 +523,6 @@
       document.documentElement.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
     }
 
-    /* Lectionary & Tracking Management */
     function getStoredProgress() {
       return JSON.parse(localStorage.getItem('bcp_reading_progress') || '{}');
     }
@@ -491,7 +560,6 @@
           { role: "Evening Prayer - 2nd Lesson", ref: plan.ep2, id: `${dateStr}_ep2` }
         ];
       } else {
-        // 2-Year cycle (Odd/Even years alternate Morning & Evening sets)
         const isOdd = parseInt(year) % 2 !== 0;
         if (isOdd) {
           lessons = [
@@ -526,11 +594,12 @@
       document.getElementById('trackerPercentLabel').innerText = `Progress: ${percent}% Complete`;
       document.getElementById('trackerCountLabel').innerText = `${completedCount} / ${lessons.length} Read`;
 
-      // Update in Morning Prayer office view
       const mpScripture = document.getElementById('mp-scripture');
       if (mpScripture) {
-        mpScripture.innerHTML = `<strong>Today's Assigned First Lesson:</strong> ${plan.mp1}<br>
-                                 <strong>Second Lesson:</strong> ${plan.mp2}`;
+        mpScripture.innerHTML = `
+          <strong>First Lesson:</strong> <a href="#" onclick="loadPassageAndSwitch('${plan.mp1}'); return false;" style="color:var(--rubric-color);">${plan.mp1}</a><br>
+          <strong>Second Lesson:</strong> <a href="#" onclick="loadPassageAndSwitch('${plan.mp2}'); return false;" style="color:var(--rubric-color);">${plan.mp2}</a>
+        `;
       }
     }
 
@@ -540,34 +609,87 @@
       fetchPassage(reference);
     }
 
+    /**
+     * Parse arbitrary Scripture strings into structured book, chapter, and verse boundaries
+     */
+    function parseCitation(str) {
+      const clean = str.trim().replace(/[—–]/g, '-');
+      // Regex separates optional book prefix digits/words from chapter:verse
+      const match = clean.match(/^((?:\d\s*)?[A-Za-z\s]+?)\s*(\d+)(?::(\d+)(?:-(\d+|end))?)?$/i);
+      if (!match) return null;
+
+      const rawBook = match[1].trim().toLowerCase();
+      const chapter = parseInt(match[2], 10);
+      const startVerse = match[3] ? parseInt(match[3], 10) : null;
+      const endVerse = match[4] ? (match[4].toLowerCase() === 'end' ? 999 : parseInt(match[4], 10)) : startVerse;
+
+      const bookId = BOOK_MAP[rawBook] || 43;
+      return { rawBook, bookId, chapter, startVerse, endVerse };
+    }
+
+    /**
+     * Primary fetcher with fallback API pipeline
+     */
     async function fetchPassage(override) {
-      const rawRef = override || document.getElementById('bibleLookupInput').value || "John 1";
+      const inputVal = override || document.getElementById('bibleLookupInput').value.trim();
       const display = document.getElementById('bibleTextDisplay');
-      display.innerHTML = `<em>Loading ${rawRef} (NKJV)...</em>`;
+      const header = document.getElementById('passageHeader');
 
-      // Parse Book and Chapter (e.g., "John 1:1-10" or "Gen 2")
-      const match = rawRef.match(/^([1-3]?\s?[A-Za-z]+)\s*(\d+)/);
-      let bookId = 43; // John default
-      let chapter = 1;
+      if (!inputVal) return;
+      header.innerText = `${inputVal} (NKJV)`;
+      display.innerHTML = `<em>Loading ${inputVal}...</em>`;
 
-      if (match) {
-        const bookName = match[1].trim();
-        chapter = match[2];
-        if (BOOK_IDS[bookName]) bookId = BOOK_IDS[bookName];
+      const parsed = parseCitation(inputVal);
+      if (!parsed) {
+        display.innerHTML = `<span style="color:var(--rubric-color);">Unable to parse citation: "${inputVal}". Please format as e.g., "John 1", "John 1:1-14", or "1 Cor 13".</span>`;
+        return;
       }
 
+      // Step 1: Attempt Bolls Life REST API (Public, unauthenticated, full chapter)
       try {
-        const res = await fetch(`https://bolls.life/get-chapter/NKJV/${bookId}/${chapter}/`);
-        if (!res.ok) throw new Error();
+        const url = `https://bolls.life/get-chapter/NKJV/${parsed.bookId}/${parsed.chapter}/`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`HTTP Error ${res.status}`);
         const data = await res.json();
-        const snippet = data.slice(0, 10).map(v => `<sup>${v.verse}</sup> ${v.text}`).join(' ');
-        display.innerHTML = `<strong>${rawRef} (NKJV)</strong><br><br>${snippet}...`;
-      } catch (e) {
-        display.innerHTML = `<strong>${rawRef} (NKJV Offline Fallback)</strong><br><br>
-        <sup>1</sup> In the beginning was the Word, and the Word was with God, and the Word was God.
-        <sup>2</sup> He was in the beginning with God.
-        <sup>3</sup> All things were made through Him, and without Him nothing was made that was made.`;
+
+        if (Array.isArray(data) && data.length > 0) {
+          let verses = data;
+          if (parsed.startVerse !== null) {
+            verses = verses.filter(v => v.verse >= parsed.startVerse && v.verse <= (parsed.endVerse || parsed.startVerse));
+          }
+
+          if (verses.length > 0) {
+            display.innerHTML = verses.map(v => `<span class="verse-num">${v.verse}</span>${v.text}`).join(' ');
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn("Bolls API fetch failed or was blocked; attempting fallback API...", err);
       }
+
+      // Step 2: Fallback to secondary open Bible API
+      try {
+        const fallbackUrl = `https://bible-api.com/${encodeURIComponent(inputVal)}?translation=kjv`;
+        const fbRes = await fetch(fallbackUrl);
+        if (!fbRes.ok) throw new Error();
+        const fbData = await fbRes.json();
+        if (fbData.text) {
+          display.innerHTML = `<em>Note: Rendered via secondary scripture service:</em><br><br>${fbData.text.replace(/\n/g, '<br>')}`;
+          return;
+        }
+      } catch (fbErr) {
+        console.warn("Secondary API failed; using offline text.", fbErr);
+      }
+
+      // Step 3: Offline static text safeguard
+      display.innerHTML = `
+        <em>(Offline Mode: Displaying preview for ${inputVal})</em><br><br>
+        <span class="verse-num">1</span>In the beginning was the Word, and the Word was with God, and the Word was God. 
+        <span class="verse-num">2</span>He was in the beginning with God. 
+        <span class="verse-num">3</span>All things were made through Him, and without Him nothing was made that was made. 
+        <span class="verse-num">4</span>In Him was life, and the life was the light of men. 
+        <span class="verse-num">5</span>And the light shines in the darkness, and the darkness did not comprehend it.
+      `;
     }
 
     function renderPrayers(list) {
