@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Daily Common Prayer (ACNA 2019)</title>
+  <title>Daily Common Prayer & Scripture Tracker (ACNA 2019)</title>
   <style>
     :root {
       --bg-color: #fcfbf9;
@@ -150,6 +150,52 @@
       border-radius: 50%;
       margin-right: 4px;
     }
+    /* Tracker Specific Styles */
+    .progress-bar-container {
+      background-color: var(--border-color);
+      border-radius: 8px;
+      height: 12px;
+      overflow: hidden;
+      margin: 0.5rem 0 1.25rem 0;
+    }
+    .progress-bar-fill {
+      background-color: var(--rubric-color);
+      height: 100%;
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+    .plan-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border: 1px solid var(--border-color);
+      padding: 0.75rem 1rem;
+      border-radius: 6px;
+      margin-bottom: 0.5rem;
+      background: var(--card-bg);
+    }
+    .plan-card.completed {
+      opacity: 0.65;
+      text-decoration: line-through;
+    }
+    .plan-info {
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+    }
+    .plan-title {
+      font-weight: bold;
+    }
+    .plan-sub {
+      font-size: 0.85em;
+      color: var(--accent-color);
+    }
+    .tracker-checkbox {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+      accent-color: var(--rubric-color);
+    }
   </style>
 </head>
 <body class="family-mode">
@@ -169,6 +215,7 @@
       <button id="nav-midday" onclick="switchTab('midday')">Midday</button>
       <button id="nav-evening" onclick="switchTab('evening')">Evening</button>
       <button id="nav-compline" onclick="switchTab('compline')">Compline</button>
+      <button id="nav-tracker" onclick="switchTab('tracker')">Reading Tracker</button>
       <button id="nav-readings" onclick="switchTab('readings')">Scripture</button>
       <button id="nav-prayers" onclick="switchTab('prayers')">Prayers</button>
       <button id="nav-calendar" onclick="switchTab('calendar')">Calendar</button>
@@ -203,9 +250,6 @@
 
         <div class="rubric">The Apostles’ Creed</div>
         <p><span class="speaker">All:</span> <span class="response">I believe in God, the Father almighty, creator of heaven and earth. I believe in Jesus Christ, his only Son, our Lord. He was conceived by the Holy Spirit and born of the Virgin Mary. He suffered under Pontius Pilate, was crucified, died, and was buried. On the third day he rose again. He ascended into heaven and is seated at the right hand of the Father. He will come again to judge the living and the dead. I believe in the Holy Spirit, the holy catholic Church, the communion of saints, the forgiveness of sins, the resurrection of the body, and the life everlasting. Amen.</span></p>
-
-        <div class="rubric">The Collect of the Day</div>
-        <p id="mp-collect">O Lord God, who brought again from the dead our Lord Jesus: Grant us grace to follow him faithfully this day; through Jesus Christ our Lord. Amen.</p>
 
         <div class="rubric">A Collect for Grace</div>
         <p>O Lord, heavenly Father, almighty and everlasting God, you have brought us safely to the beginning of this day: Defend us by your mighty power, that we may not fall into sin nor run into any danger; and that, guided by your Spirit, we may do what is righteous in your sight; through Jesus Christ our Lord. <span class="response">Amen.</span></p>
@@ -262,16 +306,49 @@
       </div>
     </div>
 
-    <!-- Scripture View -->
+    <!-- Scripture Reading Tracker Tab -->
+    <div id="section-tracker" class="liturgy-section">
+      <div class="card">
+        <h2>Daily Scripture Reading Tracker</h2>
+        <p class="rubric">Follow the BCP 2019 Daily Office Lectionary. Check off chapters as you read to track progress.</p>
+        
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin-bottom:1rem;">
+          <div>
+            <label for="trackSelector"><strong>Plan: </strong></label>
+            <select id="trackSelector" onchange="changeTrack()" style="padding:0.3rem 0.5rem; border:1px solid var(--border-color); border-radius:4px; background:var(--card-bg); color:var(--text-main);">
+              <option value="1year">1-Year Annual Track (4 Lessons)</option>
+              <option value="2year">2-Year Track (Morning/Evening Cycle)</option>
+            </select>
+          </div>
+          <div>
+            <label for="trackerDate"><strong>Date: </strong></label>
+            <input type="date" id="trackerDate" onchange="renderTracker()" style="padding:0.3rem 0.5rem; border:1px solid var(--border-color); border-radius:4px; background:var(--card-bg); color:var(--text-main);">
+          </div>
+        </div>
+
+        <div>
+          <div style="display:flex; justify-content:space-between; font-size:0.9em;">
+            <span id="trackerPercentLabel">Progress: 0% Complete</span>
+            <span id="trackerCountLabel">0 / 0 Read</span>
+          </div>
+          <div class="progress-bar-container">
+            <div id="trackerProgressBar" class="progress-bar-fill"></div>
+          </div>
+        </div>
+
+        <div id="trackerList"></div>
+      </div>
+    </div>
+
+    <!-- Scripture View Tab -->
     <div id="section-readings" class="liturgy-section">
       <div class="card">
-        <h2>Daily Scripture (NKJV)</h2>
-        <p class="rubric">Connected to open chapter API with instant fallback.</p>
+        <h2>Scripture Reader (NKJV)</h2>
         <div style="display:flex; gap:0.5rem; margin-bottom:1rem;">
           <input type="text" id="bibleLookupInput" class="search-bar" style="margin:0;" value="John 1">
           <button onclick="fetchPassage()">Read</button>
         </div>
-        <div id="bibleTextDisplay" class="scripture-box">Loading today's assigned Scripture...</div>
+        <div id="bibleTextDisplay" class="scripture-box">Loading passage...</div>
       </div>
     </div>
 
@@ -288,7 +365,6 @@
     <div id="section-calendar" class="liturgy-section">
       <div class="card">
         <h2>Liturgical Calendar</h2>
-        <p class="rubric">Key Seasons & Feasts</p>
         <div class="calendar-grid" id="calendarDays"></div>
       </div>
     </div>
@@ -296,6 +372,30 @@
 
   <script>
     let currentFontSize = 18;
+
+    // Lectionary mapping for demo/annual cycles (Month-Day format)
+    const DAILY_LECTIONARY = {
+      "01-01": { mp1: "Gen 1", mp2: "John 1:1-28", ep1: "Gal 1", ep2: "Luke 2:8-21" },
+      "01-02": { mp1: "Gen 2", mp2: "John 1:29-51", ep1: "Jer 1", ep2: "Gal 2" },
+      "01-03": { mp1: "Gen 3", mp2: "John 2", ep1: "Jer 2", ep2: "Gal 3" },
+      "01-04": { mp1: "Gen 4", mp2: "John 3:1-21", ep1: "Jer 3", ep2: "Gal 4" },
+      "01-05": { mp1: "Gen 5", mp2: "John 3:22-36", ep1: "Jer 4", ep2: "Gal 5" },
+      "default": { mp1: "Exod 24", mp2: "Matt 22:34-46", ep1: "Prov 16", ep2: "Philemon 1" }
+    };
+
+    const BOOK_IDS = {
+      "Gen": 1, "Exod": 2, "Lev": 3, "Num": 4, "Deut": 5, "Josh": 6, "Judg": 7, "Ruth": 8,
+      "1 Sam": 9, "2 Sam": 10, "1 Kings": 11, "2 Kings": 12, "1 Chron": 13, "2 Chron": 14,
+      "Ezra": 15, "Neh": 16, "Esth": 17, "Job": 18, "Ps": 19, "Prov": 20, "Eccl": 21,
+      "Song": 22, "Isa": 23, "Jer": 24, "Lam": 25, "Ezek": 26, "Dan": 27, "Hos": 28,
+      "Joel": 29, "Amos": 30, "Obad": 31, "Jonah": 32, "Mic": 33, "Nahum": 34, "Hab": 35,
+      "Zeph": 36, "Hag": 37, "Zech": 38, "Mal": 39, "Matt": 40, "Mark": 41, "Luke": 42,
+      "John": 43, "Acts": 44, "Rom": 45, "1 Cor": 46, "2 Cor": 47, "Gal": 48, "Eph": 49,
+      "Phil": 50, "Col": 51, "1 Thess": 52, "2 Thess": 53, "1 Tim": 54, "2 Tim": 55,
+      "Titus": 56, "Philemon": 57, "Heb": 58, "Jas": 59, "1 Pet": 60, "2 Pet": 61,
+      "1 John": 62, "2 John": 63, "3 John": 64, "Jude": 65, "Rev": 66
+    };
+
     const PRAYERS = [
       { id: 1, title: "For the Whole Church", cat: "The Church", text: "Almighty God, we humbly ask you to inspire continually the universal Church with the spirit of truth, unity, and concord..." },
       { id: 2, title: "For Civil Authorities", cat: "Civil", text: "Almighty God, whose kingdom is over all: Bless the leaders of our land, that they may maintain justice and peace." },
@@ -305,13 +405,18 @@
     ];
 
     function init() {
-      // Auto route by current hour
+      // Time routing
       const hour = new Date().getHours();
       if (hour >= 4 && hour < 11) switchTab('morning');
       else if (hour >= 11 && hour < 14) switchTab('midday');
       else if (hour >= 14 && hour < 20) switchTab('evening');
       else switchTab('compline');
 
+      // Set date picker to today
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('trackerDate').value = today;
+
+      renderTracker();
       renderPrayers(PRAYERS);
       renderCalendar();
       fetchPassage("John 1");
@@ -348,6 +453,123 @@
       document.documentElement.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
     }
 
+    /* Lectionary & Tracking Management */
+    function getStoredProgress() {
+      return JSON.parse(localStorage.getItem('bcp_reading_progress') || '{}');
+    }
+
+    function saveProgress(key, isChecked) {
+      const progress = getStoredProgress();
+      if (isChecked) {
+        progress[key] = true;
+      } else {
+        delete progress[key];
+      }
+      localStorage.setItem('bcp_reading_progress', JSON.stringify(progress));
+      renderTracker();
+    }
+
+    function changeTrack() {
+      renderTracker();
+    }
+
+    function renderTracker() {
+      const dateStr = document.getElementById('trackerDate').value;
+      const [year, month, day] = dateStr.split('-');
+      const mdKey = `${month}-${day}`;
+      const plan = DAILY_LECTIONARY[mdKey] || DAILY_LECTIONARY['default'];
+      const trackMode = document.getElementById('trackSelector').value;
+      const container = document.getElementById('trackerList');
+      const progress = getStoredProgress();
+
+      let lessons = [];
+      if (trackMode === '1year') {
+        lessons = [
+          { role: "Morning Prayer - 1st Lesson", ref: plan.mp1, id: `${dateStr}_mp1` },
+          { role: "Morning Prayer - 2nd Lesson", ref: plan.mp2, id: `${dateStr}_mp2` },
+          { role: "Evening Prayer - 1st Lesson", ref: plan.ep1, id: `${dateStr}_ep1` },
+          { role: "Evening Prayer - 2nd Lesson", ref: plan.ep2, id: `${dateStr}_ep2` }
+        ];
+      } else {
+        // 2-Year cycle (Odd/Even years alternate Morning & Evening sets)
+        const isOdd = parseInt(year) % 2 !== 0;
+        if (isOdd) {
+          lessons = [
+            { role: "2-Year Cycle (Year I) - 1st Lesson", ref: plan.mp1, id: `${dateStr}_2y_1` },
+            { role: "2-Year Cycle (Year I) - 2nd Lesson", ref: plan.mp2, id: `${dateStr}_2y_2` }
+          ];
+        } else {
+          lessons = [
+            { role: "2-Year Cycle (Year II) - 1st Lesson", ref: plan.ep1, id: `${dateStr}_2y_1` },
+            { role: "2-Year Cycle (Year II) - 2nd Lesson", ref: plan.ep2, id: `${dateStr}_2y_2` }
+          ];
+        }
+      }
+
+      let completedCount = 0;
+      container.innerHTML = lessons.map(item => {
+        const isDone = !!progress[item.id];
+        if (isDone) completedCount++;
+        return `
+          <div class="plan-card ${isDone ? 'completed' : ''}">
+            <div class="plan-info" onclick="loadPassageAndSwitch('${item.ref}')">
+              <span class="plan-title">${item.ref}</span>
+              <span class="plan-sub">${item.role}</span>
+            </div>
+            <input type="checkbox" class="tracker-checkbox" ${isDone ? 'checked' : ''} onchange="saveProgress('${item.id}', this.checked)">
+          </div>
+        `;
+      }).join('');
+
+      const percent = Math.round((completedCount / lessons.length) * 100);
+      document.getElementById('trackerProgressBar').style.width = percent + '%';
+      document.getElementById('trackerPercentLabel').innerText = `Progress: ${percent}% Complete`;
+      document.getElementById('trackerCountLabel').innerText = `${completedCount} / ${lessons.length} Read`;
+
+      // Update in Morning Prayer office view
+      const mpScripture = document.getElementById('mp-scripture');
+      if (mpScripture) {
+        mpScripture.innerHTML = `<strong>Today's Assigned First Lesson:</strong> ${plan.mp1}<br>
+                                 <strong>Second Lesson:</strong> ${plan.mp2}`;
+      }
+    }
+
+    function loadPassageAndSwitch(reference) {
+      document.getElementById('bibleLookupInput').value = reference;
+      switchTab('readings');
+      fetchPassage(reference);
+    }
+
+    async function fetchPassage(override) {
+      const rawRef = override || document.getElementById('bibleLookupInput').value || "John 1";
+      const display = document.getElementById('bibleTextDisplay');
+      display.innerHTML = `<em>Loading ${rawRef} (NKJV)...</em>`;
+
+      // Parse Book and Chapter (e.g., "John 1:1-10" or "Gen 2")
+      const match = rawRef.match(/^([1-3]?\s?[A-Za-z]+)\s*(\d+)/);
+      let bookId = 43; // John default
+      let chapter = 1;
+
+      if (match) {
+        const bookName = match[1].trim();
+        chapter = match[2];
+        if (BOOK_IDS[bookName]) bookId = BOOK_IDS[bookName];
+      }
+
+      try {
+        const res = await fetch(`https://bolls.life/get-chapter/NKJV/${bookId}/${chapter}/`);
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        const snippet = data.slice(0, 10).map(v => `<sup>${v.verse}</sup> ${v.text}`).join(' ');
+        display.innerHTML = `<strong>${rawRef} (NKJV)</strong><br><br>${snippet}...`;
+      } catch (e) {
+        display.innerHTML = `<strong>${rawRef} (NKJV Offline Fallback)</strong><br><br>
+        <sup>1</sup> In the beginning was the Word, and the Word was with God, and the Word was God.
+        <sup>2</sup> He was in the beginning with God.
+        <sup>3</sup> All things were made through Him, and without Him nothing was made that was made.`;
+      }
+    }
+
     function renderPrayers(list) {
       const container = document.getElementById('prayersList');
       container.innerHTML = list.map(p => `
@@ -367,7 +589,7 @@
     function renderCalendar() {
       const feasts = [
         { name: "Epiphany", color: "gold", date: "Jan 6" },
-        { name: "Ash Wednesday", color: "purple", date: "Feb/Mar" },
+        { name: "Ash Wednesday", color: "purple", date: "Moveable" },
         { name: "Easter Sunday", color: "gold", date: "Moveable" },
         { name: "Pentecost", color: "red", date: "50d post-Easter" },
         { name: "Trinity Sunday", color: "gold", date: "1wk post-Pent" },
@@ -382,29 +604,6 @@
           <span style="font-size:0.8em; color:var(--accent-color)">${f.date}</span>
         </div>
       `).join('');
-    }
-
-    async function fetchPassage(override) {
-      const target = override || document.getElementById('bibleLookupInput').value || "John 1";
-      const display = document.getElementById('bibleTextDisplay');
-      const mpBox = document.getElementById('mp-scripture');
-      display.innerHTML = `<em>Loading ${target} (NKJV)...</em>`;
-
-      try {
-        // Bolls Life API NKJV endpoint (Book 43 = John, Ch 1)
-        const res = await fetch('https://bolls.life/get-chapter/NKJV/43/1/');
-        if (!res.ok) throw new Error();
-        const data = await res.json();
-        const snippet = data.slice(0, 5).map(v => `<sup>${v.verse}</sup> ${v.text}`).join(' ');
-        display.innerHTML = `<strong>${target} (NKJV)</strong><br>${snippet}...`;
-        if (mpBox) mpBox.innerHTML = `<strong>First Lesson: ${target}</strong><br>${snippet}...`;
-      } catch (e) {
-        display.innerHTML = `<strong>${target} (NKJV Offline Fallback)</strong><br>
-        <sup>1</sup> In the beginning was the Word, and the Word was with God, and the Word was God.
-        <sup>2</sup> He was in the beginning with God.
-        <sup>3</sup> All things were made through Him, and without Him nothing was made that was made.`;
-        if (mpBox) mpBox.innerHTML = display.innerHTML;
-      }
     }
 
     window.onload = init;
