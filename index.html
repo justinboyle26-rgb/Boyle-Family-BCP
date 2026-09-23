@@ -214,12 +214,6 @@
       border-bottom: 1px solid var(--border-rule);
       padding: 0.75rem 0;
     }
-    .accordion-header {
-      font-weight: bold;
-      cursor: pointer;
-      display: flex;
-      justify-content: space-between;
-    }
   </style>
 </head>
 <body class="family-mode">
@@ -235,20 +229,20 @@
       </div>
     </div>
     <nav>
-      <button id="nav-morning" onclick="navigateTo('office/morning')">Morning</button>
-      <button id="nav-midday" onclick="navigateTo('office/midday')">Midday</button>
-      <button id="nav-evening" onclick="navigateTo('office/evening')">Evening</button>
-      <button id="nav-compline" onclick="navigateTo('office/compline')">Compline</button>
-      <button id="nav-tracker" onclick="navigateTo('tracker')">Tracker</button>
-      <button id="nav-readings" onclick="navigateTo('readings')">Scripture</button>
-      <button id="nav-prayers" onclick="navigateTo('prayers')">Prayers & Collects</button>
-      <button id="nav-calendar" onclick="navigateTo('calendar')">Calendar</button>
+      <button id="nav-morning" onclick="switchTab('morning')">Morning</button>
+      <button id="nav-midday" onclick="switchTab('midday')">Midday</button>
+      <button id="nav-evening" onclick="switchTab('evening')">Evening</button>
+      <button id="nav-compline" onclick="switchTab('compline')">Compline</button>
+      <button id="nav-tracker" onclick="switchTab('tracker')">Tracker</button>
+      <button id="nav-readings" onclick="switchTab('readings')">Scripture</button>
+      <button id="nav-prayers" onclick="switchTab('prayers')">Prayers & Collects</button>
+      <button id="nav-calendar" onclick="switchTab('calendar')">Calendar</button>
     </nav>
   </header>
 
   <main>
-    <!-- Morning Prayer -->
-    <div id="section-office-morning" class="liturgy-section">
+    <!-- Daily Morning Prayer -->
+    <div id="section-morning" class="liturgy-section">
       <div class="card">
         <h2>Daily Morning Prayer</h2>
         <div class="rubric">The Officiant begins with an Opening Sentence of Scripture.</div>
@@ -279,7 +273,7 @@
         <span class="response">Glory be to the Father, and to the Son, and to the Holy Spirit; <span class="asterisk">*</span> as it was in the beginning, is now, and ever shall be, world without end. Amen.</span></p>
 
         <div class="rubric">Appointed Scripture Lessons</div>
-        <div class="scripture-box" id="mp-scripture">Loading lessons...</div>
+        <div class="scripture-box" id="mp-scripture">Loading appointed lessons...</div>
 
         <div class="rubric">Benedictus es, Domine — A Song of Praise</div>
         <p>Glory to you, Lord God of our fathers; <span class="asterisk">*</span> you are worthy of praise; glory to you.<br>
@@ -291,7 +285,7 @@
         <div class="rubric">The Apostles’ Creed</div>
         <p><span class="speaker">All:</span> <span class="response">I believe in God, the Father almighty, creator of heaven and earth. I believe in Jesus Christ, his only Son, our Lord. He was conceived by the Holy Spirit and born of the Virgin Mary. He suffered under Pontius Pilate, was crucified, died, and was buried. He descended to the dead. On the third day he rose again. He ascended into heaven, and is seated at the right hand of the Father. He will come again to judge the living and the dead. I believe in the Holy Spirit, the holy catholic Church, the communion of saints, the forgiveness of sins, the resurrection of the body, and the life everlasting. Amen.</span></p>
 
-        <div class="rubric">The Prayers & Collect of the Day</div>
+        <div class="rubric">The Prayers</div>
         <p><span class="speaker">Officiant:</span> The Lord be with you.<br>
         <span class="speaker">People:</span> <span class="response">And with your spirit.</span><br>
         <span class="speaker">Officiant:</span> Let us pray. Lord, have mercy upon us.<br>
@@ -299,7 +293,7 @@
         <span class="speaker">Officiant:</span> Lord, have mercy upon us.</p>
         <p><span class="speaker">All:</span> <span class="response">Our Father, who art in heaven, hallowed be thy Name, thy kingdom come, thy will be done, on earth as it is in heaven. Give us this day our daily bread. And forgive us our trespasses, as we forgive those who trespass against us. And lead us not into temptation, but deliver us from evil. For thine is the kingdom, and the power, and the glory, for ever and ever. Amen.</span></p>
 
-        <div class="rubric">Appointed Collect for the Day</div>
+        <div class="rubric">Collect of the Day</div>
         <div id="mp-dynamic-collect" style="padding-left:0.5rem; border-left: 2px solid var(--border-rule);">Loading Collect...</div>
 
         <div class="rubric">A Collect for Grace</div>
@@ -308,7 +302,7 @@
     </div>
 
     <!-- Midday Prayer -->
-    <div id="section-office-midday" class="liturgy-section">
+    <div id="section-midday" class="liturgy-section">
       <div class="card">
         <h2>Midday Prayer</h2>
         <p><span class="speaker">Officiant:</span> O God, make speed to save us.<br>
@@ -331,7 +325,7 @@
     </div>
 
     <!-- Evening Prayer -->
-    <div id="section-office-evening" class="liturgy-section">
+    <div id="section-evening" class="liturgy-section">
       <div class="card">
         <h2>Daily Evening Prayer</h2>
         <div class="rubric">Opening Sentence</div>
@@ -358,7 +352,7 @@
     </div>
 
     <!-- Compline -->
-    <div id="section-office-compline" class="liturgy-section">
+    <div id="section-compline" class="liturgy-section">
       <div class="card">
         <h2>Compline</h2>
         <p><span class="speaker">Officiant:</span> The Lord Almighty grant us a peaceful night and a perfect end.<br>
@@ -383,7 +377,7 @@
       </div>
     </div>
 
-    <!-- Tracker View -->
+    <!-- Reading Tracker Tab -->
     <div id="section-tracker" class="liturgy-section">
       <div class="card">
         <h2>Daily Scripture Reading Tracker</h2>
@@ -417,11 +411,10 @@
       </div>
     </div>
 
-    <!-- Scripture Reader -->
+    <!-- Scripture Reader Tab -->
     <div id="section-readings" class="liturgy-section">
       <div class="card">
         <h2>Scripture Reader (NKJV)</h2>
-        <p class="rubric">Reads full chapters and complete designated verse ranges.</p>
         <div style="display:flex; gap:0.5rem; margin-bottom:1rem;">
           <input type="text" id="bibleLookupInput" class="search-bar" style="margin:0;" value="John 1:1-28">
           <button onclick="fetchPassage()">Read</button>
@@ -431,20 +424,19 @@
       </div>
     </div>
 
-    <!-- Prayers and Collects Treasury -->
+    <!-- Prayers Treasury Tab -->
     <div id="section-prayers" class="liturgy-section">
       <div class="card">
         <h2>Prayers & Collects Treasury</h2>
-        <input type="text" id="prayerSearch" class="search-bar" placeholder="Search 125 prayers & collects (e.g., peace, family, sick, Lent)..." onkeyup="filterPrayers()">
+        <input type="text" id="prayerSearch" class="search-bar" placeholder="Search 125 prayers & collects..." onkeyup="filterPrayers()">
         <div id="prayersList"></div>
       </div>
     </div>
 
-    <!-- Calendar View -->
+    <!-- Calendar View Tab -->
     <div id="section-calendar" class="liturgy-section">
       <div class="card">
-        <h2>Algorithmic Liturgical Calendar</h2>
-        <p class="rubric">Calculated via Meeus/Jones/Butcher Computus.</p>
+        <h2>Liturgical Calendar</h2>
         <div style="margin-bottom:1rem;">
           <label for="calYearInput"><strong>Year: </strong></label>
           <input type="number" id="calYearInput" value="2026" min="1900" max="2100" onchange="renderCalendar()" style="padding:0.35rem 0.5rem; border:1px solid var(--border-rule); border-radius:4px; width:100px; background:var(--card-bg); color:var(--text-primary);">
@@ -455,28 +447,19 @@
   </main>
 
   <script>
-    /* =========================================================================
-       1. CANONICAL BIBLE DEFINITIONS & LECTIONARY TABLE
-       ========================================================================= */
     const BOOK_MAP = {
-      "gen": 1, "genesis": 1, "exod": 2, "exodus": 2, "ex": 2, "lev": 3, "leviticus": 3,
-      "num": 4, "numbers": 4, "deut": 5, "deuteronomy": 5, "dt": 5, "josh": 6, "joshua": 6,
+      "gen": 1, "genesis": 1, "exod": 2, "exodus": 2, "lev": 3, "leviticus": 3,
+      "num": 4, "numbers": 4, "deut": 5, "deuteronomy": 5, "josh": 6, "joshua": 6,
       "judg": 7, "judges": 7, "ruth": 8, "1 sam": 9, "1 samuel": 9, "2 sam": 10, "2 samuel": 10,
-      "1 kings": 11, "2 kings": 12, "1 chron": 13, "1 chronicles": 13, "2 chron": 14, "2 chronicles": 14,
-      "ezra": 15, "neh": 16, "nehemiah": 16, "esth": 17, "esther": 17, "job": 18,
-      "ps": 19, "psalm": 19, "psalms": 19, "prov": 20, "proverbs": 20, "eccl": 21, "ecclesiastes": 21,
-      "song": 22, "song of songs": 22, "isa": 23, "isaiah": 23, "jer": 24, "jeremiah": 24,
-      "lam": 25, "lamentations": 25, "ezek": 26, "ezekiel": 26, "dan": 27, "daniel": 27,
-      "hos": 28, "hosea": 28, "joel": 29, "amos": 30, "obad": 31, "jonah": 32, "mic": 33, "micah": 33,
-      "nahum": 34, "hab": 35, "habakkuk": 35, "zeph": 36, "zephaniah": 36, "hag": 37, "haggai": 37,
-      "zech": 38, "zechariah": 38, "mal": 39, "malachi": 39, "matt": 40, "matthew": 40,
-      "mark": 41, "luke": 42, "john": 43, "acts": 44, "rom": 45, "romans": 45,
-      "1 cor": 46, "1 corinthians": 46, "2 cor": 47, "2 corinthians": 47, "gal": 48, "galatians": 48,
-      "eph": 49, "ephesians": 49, "phil": 50, "philippians": 50, "col": 51, "colossians": 51,
-      "1 thess": 52, "1 thessalonians": 52, "2 thess": 53, "2 thessalonians": 53,
-      "1 tim": 54, "1 timothy": 54, "2 tim": 55, "2 timothy": 55, "titus": 56, "philemon": 57,
-      "heb": 58, "hebrews": 58, "jas": 59, "james": 59, "1 pet": 60, "1 peter": 60,
-      "2 pet": 61, "2 peter": 61, "1 john": 62, "2 john": 63, "3 john": 64, "jude": 65, "rev": 66, "revelation": 66
+      "1 kings": 11, "2 kings": 12, "1 chron": 13, "2 chron": 14, "ezra": 15, "neh": 16,
+      "esth": 17, "job": 18, "ps": 19, "psalms": 19, "prov": 20, "eccl": 21, "song": 22,
+      "isa": 23, "isaiah": 23, "jer": 24, "jeremiah": 24, "lam": 25, "ezek": 26, "dan": 27,
+      "hos": 28, "joel": 29, "amos": 30, "obad": 31, "jonah": 32, "mic": 33, "nahum": 34,
+      "hab": 35, "zeph": 36, "hag": 37, "zech": 38, "mal": 39, "matt": 40, "matthew": 40,
+      "mark": 41, "luke": 42, "john": 43, "acts": 44, "rom": 45, "1 cor": 46, "2 cor": 47,
+      "gal": 48, "eph": 49, "phil": 50, "col": 51, "1 thess": 52, "2 thess": 53,
+      "1 tim": 54, "2 tim": 55, "titus": 56, "philemon": 57, "heb": 58, "jas": 59,
+      "1 pet": 60, "2 pet": 61, "1 john": 62, "2 john": 63, "3 john": 64, "jude": 65, "rev": 66
     };
 
     const BCP_LECTIONARY = {
@@ -491,27 +474,22 @@
 
     const TREASURY = [
       { id: "op-1", title: "For the Whole Church", cat: "The Church", text: "Almighty God, from whom all power and authority are derived: We commend to your continual care the universal Church, that it may be guided and governed by your Holy Spirit." },
-      { id: "op-27", title: "For the Peace of the World", cat: "The Nation", text: "Eternal God, in whose perfect kingdom no sword is drawn but the sword of righteousness, no strength known but the strength of love: So mightily spread abroad your Spirit, that all peoples may be gathered under the banner of the Prince of Peace. Amen." },
+      { id: "op-27", title: "For Peace in the World", cat: "The Nation", text: "Eternal God, in whose perfect kingdom no sword is drawn but the sword of righteousness, no strength known but the strength of love: So mightily spread abroad your Spirit, that all peoples may be gathered under the banner of the Prince of Peace. Amen." },
       { id: "op-30", title: "For Civil Authorities", cat: "The Nation", text: "Almighty God, our heavenly Father, send down on those who hold public office the spirit of wisdom, charity, and justice; that with steadfast purpose they may faithfully serve to promote the well-being of all people. Amen." },
-      { id: "op-42", title: "For the Human Family", cat: "Society", text: "O God, you made us in your own image and redeemed us through Jesus Christ your Son: Look with compassion on the whole human family; take away the arrogance and hatred which infect our hearts; break down the walls that separate us; unite us in bonds of love. Amen." },
       { id: "c-easter", title: "Easter Day", cat: "Collects", text: "Almighty God, who through your only-begotten Son Jesus Christ overcame death and opened to us the gate of everlasting life: Grant that we, who celebrate with joy the day of the Lord’s resurrection, may be raised from the death of sin by your life-giving Spirit. Amen." }
     ];
 
-    /* =========================================================================
-       2. COMPUTUS ALGORITHM (Meeus/Jones/Butcher)
-       ========================================================================= */
+    /* Computus Engine */
     function calculateComputus(Y) {
       const a = Y % 19, b = Math.floor(Y / 100), c = Y % 100;
       const d = Math.floor(b / 4), e = b % 4;
-      const f = Math.floor((b + 8) / 25);
-      const g = Math.floor((b - f + 1) / 3);
+      const f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3);
       const h = (19 * a + b - d - g + 15) % 30;
       const i = Math.floor(c / 4), k = c % 4;
       const L = (32 + 2 * e + 2 * i - h - k) % 7;
       const m = Math.floor((a + 11 * h + 22 * L) / 451);
       const month = Math.floor((h + L - 7 * m + 114) / 31);
       const day = ((h + L - 7 * m + 114) % 31) + 1;
-      
       const easter = new Date(Date.UTC(Y, month - 1, day));
       const addDays = (base, n) => new Date(base.getTime() + n * 86400000);
 
@@ -527,50 +505,39 @@
       };
     }
 
-    /* =========================================================================
-       3. INDEXEDDB CACHING PIPELINE
-       ========================================================================= */
-    let db;
-    function initDB() {
-      return new Promise((resolve) => {
-        const req = indexedDB.open("bcp_scripture_cache", 1);
-        req.onupgradeneeded = (e) => {
-          db = e.target.result;
-          if (!db.objectStoreNames.contains("nkjv_cache")) {
-            db.createObjectStore("nkjv_cache", { keyPath: "key" });
-          }
-        };
-        req.onsuccess = (e) => { db = e.target.result; resolve(); };
-        req.onerror = () => { resolve(); };
-      });
+    /* Tab Switcher & Router */
+    function switchTab(tabId) {
+      document.querySelectorAll('.liturgy-section').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('nav button').forEach(el => el.classList.remove('active'));
+
+      const target = document.getElementById('section-' + tabId);
+      const btn = document.getElementById('nav-' + tabId);
+
+      if (target) target.classList.add('active');
+      if (btn) btn.classList.add('active');
+
+      window.location.hash = '#/' + tabId;
+      window.scrollTo(0, 0);
     }
 
-    function getFromCache(key) {
-      if (!db) return Promise.resolve(null);
-      return new Promise((resolve) => {
-        const tx = db.transaction("nkjv_cache", "readonly");
-        const store = tx.objectStore("nkjv_cache");
-        const req = store.get(key);
-        req.onsuccess = () => resolve(req.result ? req.result.verses : null);
-        req.onerror = () => resolve(null);
-      });
+    function handleHashRoute() {
+      const hash = window.location.hash.replace(/^#\/?/, '').trim();
+      if (!hash) {
+        // Auto default by time of day
+        const hr = new Date().getHours();
+        if (hr >= 4 && hr < 11) switchTab('morning');
+        else if (hr >= 11 && hr < 14) switchTab('midday');
+        else if (hr >= 14 && hr < 20) switchTab('evening');
+        else switchTab('compline');
+      } else {
+        const clean = hash.replace('office/', '');
+        switchTab(clean);
+      }
     }
 
-    function saveToCache(key, verses) {
-      if (!db) return;
-      const tx = db.transaction("nkjv_cache", "readwrite");
-      const store = tx.objectStore("nkjv_cache");
-      store.put({ key, verses, cachedAt: Date.now() });
-    }
-
-    /* =========================================================================
-       4. FULL-TEXT SCRIPTURE ENGINE
-       ========================================================================= */
+    /* Scripture Parser & Fetcher */
     function parseCitation(str) {
-      // Normalize dashes and trim dagger symbols (†)
       const clean = str.replace(/[†‡]/g, '').trim().replace(/[—–]/g, '-');
-      
-      // Match Book and Chapter/Verse portion
       const m = clean.match(/^((?:[1-3]\s+)?[A-Za-z\s]+?)\s*(\d.*)$/);
       if (!m) return null;
 
@@ -578,7 +545,6 @@
       const spec = m[2].trim();
       const bookId = BOOK_MAP[rawBook] || 43;
 
-      // Case 1: Cross-chapter span (e.g., "7:53-8:30" or "1:1-2:3")
       const crossMatch = spec.match(/^(\d+):(\d+)-(\d+):(\d+|end)$/i);
       if (crossMatch) {
         return {
@@ -591,7 +557,6 @@
         };
       }
 
-      // Case 2: Single chapter with verse span or whole chapter
       const singleMatch = spec.match(/^(\d+)(?::(\d+)(?:-(\d+|end))?)?$/i);
       if (singleMatch) {
         const chapter = parseInt(singleMatch[1], 10);
@@ -603,42 +568,28 @@
           if (singleMatch[3]) {
             endVerse = singleMatch[3].toLowerCase() === 'end' ? 999 : parseInt(singleMatch[3], 10);
           } else {
-            endVerse = startVerse; // Single verse specified
+            endVerse = startVerse;
           }
         }
-
-        return {
-          type: 'single',
-          bookId,
-          chapter,
-          startVerse,
-          endVerse
-        };
+        return { type: 'single', bookId, chapter, startVerse, endVerse };
       }
-
       return null;
     }
 
     async function fetchChapterData(bookId, chapter) {
-      const cacheKey = `${bookId}_${chapter}`;
-      let cached = await getFromCache(cacheKey);
-      if (cached && cached.length > 0) return cached;
-
       try {
         const res = await fetch(`https://bolls.life/get-chapter/NKJV/${bookId}/${chapter}/`);
         if (res.ok) {
           const raw = await res.json();
           if (Array.isArray(raw) && raw.length > 0) {
-            const verses = raw.map(v => ({
+            return raw.map(v => ({
               verse: v.verse,
               text: v.text.replace(/<[^>]*>?/gm, '').trim()
             }));
-            saveToCache(cacheKey, verses);
-            return verses;
           }
         }
       } catch (err) {
-        console.warn("Bolls API unreachable for chapter:", chapter, err);
+        console.warn("API network notice:", err);
       }
       return null;
     }
@@ -670,17 +621,12 @@
           renderedHtml = verses.map(v => `<span class="verse-num">${v.verse}</span>${v.text}`).join(' ');
         }
       } else if (parsed.type === 'cross') {
-        // Multi-chapter ingestion
         for (let ch = parsed.startChap; ch <= parsed.endChap; ch++) {
           const data = await fetchChapterData(parsed.bookId, ch);
           if (data) {
             let verses = data;
-            if (ch === parsed.startChap) {
-              verses = verses.filter(v => v.verse >= parsed.startVerse);
-            }
-            if (ch === parsed.endChap) {
-              verses = verses.filter(v => v.verse <= parsed.endVerse);
-            }
+            if (ch === parsed.startChap) verses = verses.filter(v => v.verse >= parsed.startVerse);
+            if (ch === parsed.endChap) verses = verses.filter(v => v.verse <= parsed.endVerse);
             renderedHtml += `<div class="chapter-heading">Chapter ${ch}</div>`;
             renderedHtml += verses.map(v => `<span class="verse-num">${v.verse}</span>${v.text}`).join(' ');
           }
@@ -692,7 +638,7 @@
         return;
       }
 
-      // Secondary Fallback API
+      // Fallback
       try {
         const fb = await fetch(`https://bible-api.com/${encodeURIComponent(query)}?translation=kjv`);
         if (fb.ok) {
@@ -704,46 +650,10 @@
         }
       } catch (e) {}
 
-      // Terminal Fallback
-      display.innerHTML = `<em>Unable to retrieve the complete text online. Please check network connectivity or enter a valid biblical citation.</em>`;
+      display.innerHTML = `<em>Unable to retrieve the complete text online. Please check network connectivity.</em>`;
     }
 
-    /* =========================================================================
-       5. CLIENT ROUTING & LITURGICAL TIMING
-       ========================================================================= */
-    function navigateTo(hash) {
-      window.location.hash = '#/' + hash;
-    }
-
-    function handleHashRoute() {
-      const raw = window.location.hash.replace(/^#\/?/, '');
-      const parts = raw.split('/');
-      let view = parts[0] || '';
-
-      if (!view) {
-        const hour = new Date().getHours();
-        if (hour >= 4 && hour < 11) view = 'office/morning';
-        else if (hour >= 11 && hour < 14) view = 'office/midday';
-        else if (hour >= 14 && hour < 20) view = 'office/evening';
-        else view = 'office/compline';
-      }
-
-      document.querySelectorAll('.liturgy-section').forEach(el => el.classList.remove('active'));
-      document.querySelectorAll('nav button').forEach(el => el.classList.remove('active'));
-
-      const secName = 'section-' + view.replace('/', '-');
-      const target = document.getElementById(secName);
-      if (target) {
-        target.classList.add('active');
-        const btnId = 'nav-' + (parts[1] || parts[0]);
-        const btn = document.getElementById(btnId);
-        if (btn) btn.classList.add('active');
-      }
-    }
-
-    /* =========================================================================
-       6. TRACKER & OFFICE LECTIONARY POPULATION
-       ========================================================================= */
+    /* Tracker Logic */
     function getStoredProgress() {
       return JSON.parse(localStorage.getItem('bcp_reading_progress') || '{}');
     }
@@ -800,7 +710,6 @@
       document.getElementById('trackerPercentLabel').innerText = `Progress: ${pct}% Complete`;
       document.getElementById('trackerCountLabel').innerText = `${done} / ${lessons.length} Read`;
 
-      // Update office inline readings
       const mpBox = document.getElementById('mp-scripture');
       if (mpBox) {
         mpBox.innerHTML = `
@@ -819,20 +728,15 @@
 
     function openScriptureReader(ref) {
       document.getElementById('bibleLookupInput').value = ref;
-      navigateTo('readings');
+      switchTab('readings');
       fetchPassage(ref);
     }
 
-    /* =========================================================================
-       7. OCCASIONAL PRAYERS & CALENDAR RENDERING
-       ========================================================================= */
     function renderPrayers(items) {
       const container = document.getElementById('prayersList');
       container.innerHTML = items.map(p => `
         <div class="accordion-item">
-          <div class="accordion-header">
-            <span><strong>${p.title}</strong> <small style="color:var(--text-speaker);">[${p.cat}]</small></span>
-          </div>
+          <strong>${p.title}</strong> <small style="color:var(--text-speaker);">[${p.cat}]</small>
           <p style="margin:0.4rem 0 0 0;">${p.text}</p>
         </div>
       `).join('');
@@ -870,9 +774,6 @@
       `).join('');
     }
 
-    /* =========================================================================
-       8. ACCESSIBILITY TOGGLES & BOOTSTRAP
-       ========================================================================= */
     let currentScale = 18;
     function adjustFont(delta) {
       currentScale = Math.min(28, Math.max(14, currentScale + delta * 2));
@@ -880,8 +781,8 @@
     }
 
     function toggleTheme() {
-      const current = document.documentElement.getAttribute('data-theme');
-      document.documentElement.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
+      const cur = document.documentElement.getAttribute('data-theme');
+      document.documentElement.setAttribute('data-theme', cur === 'dark' ? 'light' : 'dark');
     }
 
     function toggleFamilyMode() {
@@ -896,8 +797,7 @@
       }
     }
 
-    async function init() {
-      await initDB();
+    function init() {
       const today = new Date().toISOString().split('T')[0];
       document.getElementById('trackerDate').value = today;
 
